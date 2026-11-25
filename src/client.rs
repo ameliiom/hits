@@ -38,20 +38,25 @@ pub fn hit(entity: u32, amount: f32, health: f32, max: f32) {
 /// Draws `s` centred, one character at a time from the left, so numbers and hearts keep their
 /// order whatever the game's language ("-3" turned into "3-" in Arabic, and a direction mark showed
 /// as a box: both seen in the game).
-fn left_to_right(d: &mut dyn mod_api::BlockEntityDrawContext, s: &str, y: f32, colour: u32) {
-    let glyphs: Vec<(Text, f32)> = s
-        .chars()
-        .map(|ch| {
+fn left_to_right(d: &mut dyn mod_api::BlockEntityDrawContext, glyphs: &[(char, u32)], y: f32) {
+    let glyphs: Vec<(Text, f32, u32)> = glyphs
+        .iter()
+        .map(|(ch, colour)| {
             let t = Text::literal(ch.to_string());
             let w = d.text_width(&t).unwrap_or(0.0);
-            (t, w)
+            (t, w, *colour)
         })
         .collect();
     let mut x = -glyphs.iter().map(|g| g.1).sum::<f32>() / 2.0;
-    for (t, w) in glyphs {
+    for (t, w, colour) in glyphs {
         let _ = d.text(&t, [x, y], colour, false, Some(0));
         x += w;
     }
+}
+
+/// Every character of `s` in one colour.
+fn coloured(s: &str, colour: u32) -> Vec<(char, u32)> {
+    s.chars().map(|c| (c, colour)).collect()
 }
 
 fn on(host: &dyn ClientHost, key: &str) -> bool {
@@ -90,11 +95,9 @@ pub fn draw(host: &dyn ClientHost, event: &mut RenderLivingPostEvent<'_>) {
     d.rotate_about([0.0, 1.0, 0.0], look::facing(event.entity.body_yaw, camera), [0.0, 0.0, 0.0]);
     d.scale([0.025, -0.025, 0.025]);
     if show_hearts && hearts_on {
-        let line = match look::hearts(health, 10) {
-            Some((full, half)) => format!("{}{}{}", "❤".repeat(full as usize), if half { "♥" } else { "" }, "♡".repeat(((max / 2.0).ceil() as usize).saturating_sub(full as usize + usize::from(half)))),
-            None => format!("❤ {} / {}", look::text(health), look::text(max)),
-        };
-        left_to_right(d, &line, 0.0, 0xFF4040);
+        let row = look::heart_row(health, max, 10)
+            .unwrap_or_else(|| coloured(&format!("❤ {} / {}", look::text(health), look::text(max)), 0xFF4040));
+        left_to_right(d, &row, 0.0);
     }
     for (amount, at) in numbers.into_iter().filter(|_| numbers_on) {
         let Some(rise) = look::rise(&Number { amount, at: at.unwrap_or(now) }, now) else { continue };
@@ -102,7 +105,7 @@ pub fn draw(host: &dyn ClientHost, event: &mut RenderLivingPostEvent<'_>) {
         d.push();
         d.translate([0.0, -12.0 - rise, 0.0]);
         d.scale([scale, scale, 1.0]);
-        left_to_right(d, &look::label(amount), -8.0, colour);
+        left_to_right(d, &coloured(&look::label(amount), colour), -8.0);
         d.pop();
     }
     d.pop();

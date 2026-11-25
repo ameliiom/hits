@@ -16,10 +16,15 @@ struct State {
     hits: Vec<(i32, f32)>,
     /// Hits sent to each player in the current second, and which second.
     sent: BTreeMap<u128, (u32, u32)>,
+    /// Each entity's health as last sent, to show what a heal really gave.
+    health: BTreeMap<i32, f32>,
     ticks: u32,
 }
 
-static STATE: Mutex<State> = Mutex::new(State { hits: Vec::new(), sent: BTreeMap::new(), ticks: 0 });
+/// Entities whose health is remembered, at most (the oldest are forgotten all at once).
+const REMEMBERED: usize = 4096;
+
+static STATE: Mutex<State> = Mutex::new(State { hits: Vec::new(), sent: BTreeMap::new(), health: BTreeMap::new(), ticks: 0 });
 
 fn with<R>(f: impl FnOnce(&mut State) -> R) -> R {
     f(&mut STATE.lock().unwrap_or_else(|e| e.into_inner()))
@@ -52,6 +57,22 @@ pub fn tick(host: &mut dyn ServerHost) {
         let Some(entity) = host.entity(id_u) else { continue };
         let Some(living) = host.living(entity) else { continue };
         let (Some(health), Some(max), Some(at)) = (living.health(&*host), living.max_health(&*host), entity.position(&*host)) else { continue };
+        let before = with(|s| {
+            if s.health.len() >= REMEMBERED {
+                s.health.clear();
+            }
+            s.health.insert(id, health)
+        });
+        // A heal shows what it really gave (none: a heal the game didn't apply shows nothing).
+        let amount = if amount < 0.0 {
+            let given = crate::look::healed(-amount, before, health, max);
+            if given < crate::look::HEAL_SHOWN {
+                continue;
+            }
+            -given
+        } else {
+            amount
+        };
         let hit = Hit { entity: VarInt(id), amount: tenths(amount), health: tenths(health), max: tenths(max) };
         let mut near: Vec<(f64, mod_api::PlayerRef)> = players
             .iter()

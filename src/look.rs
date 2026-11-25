@@ -36,6 +36,16 @@ pub fn colour_and_scale(amount: f32, max: f32) -> (u32, f32) {
     }
 }
 
+/// How much a heal really gave: what health rose by since it was last known, at most what was
+/// asked (an Instant Health III asks 32 of a pig that can take 3); unknown before, at most the
+/// most it can hold.
+pub fn healed(asked: f32, before: Option<f32>, after: f32, max: f32) -> f32 {
+    match before {
+        Some(b) => (after - b).clamp(0.0, asked),
+        None => asked.min(max),
+    }
+}
+
 /// The number shown: "-3" for a hit, "+4" for a heal.
 pub fn label(amount: f32) -> String {
     if amount < 0.0 { format!("+{}", text(-amount)) } else { format!("-{}", text(amount)) }
@@ -51,6 +61,26 @@ pub fn rise(n: &Number, now: i64) -> Option<f32> {
 /// draw comes turned with the body, so the body's turn is undone and the camera's applied.
 pub fn facing(body_yaw: f32, camera_yaw: f32) -> f32 {
     (180.0 + body_yaw - camera_yaw).rem_euclid(360.0)
+}
+
+/// The hearts row: each heart's glyph and colour, full red, a half pale, the empty ones dark (the
+/// font's outline heart drew as red as a full one: seen in the game); None for a mob with more
+/// than `cap` hearts.
+pub fn heart_row(health: f32, max: f32, cap: u32) -> Option<Vec<(char, u32)>> {
+    let total = (max / 2.0).ceil().max(0.0) as u32;
+    if total > cap {
+        return None;
+    }
+    let (full, half) = hearts(health, cap)?;
+    Some(
+        (0..total)
+            .map(|i| match i.cmp(&full) {
+                std::cmp::Ordering::Less => ('❤', 0xFF4040),
+                std::cmp::Ordering::Equal if half => ('❤', 0xFF9A9A),
+                _ => ('❤', 0x3A3A3A),
+            })
+            .collect(),
+    )
 }
 
 /// Hearts: how many full and whether a half, for `health` (2 health a heart), at most `cap` hearts
@@ -83,6 +113,15 @@ mod tests {
     }
 
     #[test]
+    fn a_heal_shows_what_it_really_gave() {
+        // Seen in the game: Instant Health III on a pig at 6.5 of 10 showed "+32".
+        assert_eq!(healed(32.0, Some(6.5), 10.0, 10.0), 3.5);
+        assert_eq!(healed(4.0, Some(2.0), 6.0, 20.0), 4.0);
+        assert_eq!(healed(32.0, None, 10.0, 10.0), 10.0);
+        assert_eq!(healed(4.0, Some(9.0), 8.0, 10.0), 0.0);
+    }
+
+    #[test]
     fn a_number_rises_then_goes() {
         let n = Number { amount: 3.0, at: 100 };
         assert_eq!(rise(&n, 100), Some(0.0));
@@ -98,6 +137,13 @@ mod tests {
         assert_eq!(facing(90.0, 180.0), 90.0);
         assert_eq!(facing(90.0, 90.0), 180.0);
         assert_eq!(facing(0.0, 0.0), 180.0);
+    }
+
+    #[test]
+    fn the_hearts_row_shows_empty_hearts_dark() {
+        let row = heart_row(5.0, 10.0, 10).unwrap();
+        assert_eq!(row.iter().map(|h| h.1).collect::<Vec<_>>(), vec![0xFF4040, 0xFF4040, 0xFF9A9A, 0x3A3A3A, 0x3A3A3A]);
+        assert!(heart_row(30.0, 40.0, 10).is_none());
     }
 
     #[test]

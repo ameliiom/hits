@@ -48,6 +48,8 @@ You and your friend see what each hit did and how close a mob is to dying, witho
 | A cow at 4 healed by Instant Health | a green "+4", hearts back to 4 of 5 |
 | The text facing the camera | read from the south and the east with the turn 180° + body yaw − camera yaw |
 | Arabic | "-3" first came out "3-", then a left-to-right mark showed as a box; each character is now drawn on its own, left to right |
+| Heal shown (0.2.1) | Instant Health on a sheep at 3 of 8 showed "+4" (3 → 7): the heal shows what health really rose by, not what was asked (Instant Health III on a pig had shown "+32"); a heal the game did not apply shows nothing (it had shown "-0") |
+| Empty hearts (0.2.1) | drawn dark, a half heart pale: the font's outline heart had drawn as red as a full one |
 
 ## 7. Risks and answers
 
