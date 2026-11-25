@@ -1,13 +1,17 @@
 //! Hits: each hit's damage rises from the mob it hurt, and a hurt mob shows its hearts above its
-//! head for a few seconds, for everyone near. See `docs/design.md`.
+//! head for a few seconds, for everyone near; a villager or wandering trader looked at shows its
+//! trades above its head. See `docs/design.md`.
 //!
 //! - **The look** (`look.rs`): text, colours, rise, hearts and the turn to the camera, on plain values.
 //! - **The server** (`server.rs`): hits heard, the new health sent to players near.
 //! - **The client** (`client.rs`): drawn above each mob after its render.
+//! - **Trades** (`trades.rs` on the server, `trades_view.rs` on the client): the merchant looked at.
 mod client;
 pub mod look;
 mod payloads;
 mod server;
+mod trades;
+mod trades_view;
 
 pub(crate) const MOD_ID: &str = "hits";
 
@@ -15,6 +19,7 @@ pub(crate) const MOD_ID: &str = "hits";
 pub(crate) mod setting {
     pub const NUMBERS: &str = "numbers";
     pub const HEARTS: &str = "hearts";
+    pub const TRADES: &str = "trades";
 }
 
 use mod_api::{
@@ -30,13 +35,18 @@ fn on_hit(hit: payloads::Hit, _: &mut dyn IPayloadContext) -> Result<(), String>
     Ok(())
 }
 
+fn on_trades(t: payloads::Trades, _: &mut dyn IPayloadContext) -> Result<(), String> {
+    trades_view::trades(t);
+    Ok(())
+}
+
 #[derive(Default)]
 pub struct Mod;
 
 #[mod_api::horizon_mod]
 impl mod_api::Hooks for Mod {
     fn register(&self, r: &mut dyn Registrar, _cx: &RegistrationContext) {
-        for (key, label) in [(setting::NUMBERS, "hits.config.numbers"), (setting::HEARTS, "hits.config.hearts")] {
+        for (key, label) in [(setting::NUMBERS, "hits.config.numbers"), (setting::HEARTS, "hits.config.hearts"), (setting::TRADES, "hits.config.trades")] {
             if let Err(e) = r.register_setting(SettingSpec::toggle(key, label, true)) {
                 eprintln!("[hits] setting {key}: {e:?}");
             }
@@ -44,6 +54,7 @@ impl mod_api::Hooks for Mod {
         let mut handlers = r.payload_handlers();
         let mut v1 = handlers.registrar("1").optional();
         let _ = payloads::HIT.set(v1.play_to_client_typed(PayloadId("hits:hit".into()), on_hit));
+        let _ = payloads::TRADES.set(v1.play_to_client_typed(PayloadId("hits:trades".into()), on_trades));
     }
 
     /// A living entity took a hit (its final damage, after armour and the rest).
@@ -64,11 +75,13 @@ impl mod_api::Hooks for Mod {
     fn server_tick(&self, host: &mut dyn ServerHost, event: &mut ServerTickEvent<'_>) {
         if matches!(event.phase, ServerTickPhase::ServerTickEnd { .. }) {
             server::tick(host);
+            trades::tick(host);
         }
     }
 
     fn player_logged_out(&self, _: &mut dyn ServerHost, event: &mut PlayerLoggedOutEvent<'_>) {
         server::forget(event.player);
+        trades::forget(event.player);
     }
 
     fn render_living_post(&self, host: &dyn ClientHost, event: &mut RenderLivingPostEvent<'_>) {
