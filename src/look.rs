@@ -20,9 +20,25 @@ pub fn text(amount: f32) -> String {
     if tenths % 10 == 0 { format!("{}", tenths / 10) } else { format!("{}.{}", tenths / 10, tenths % 10) }
 }
 
-/// A big hit (a quarter of the mob's life or more) shows bigger and red; others yellow.
+/// Healing shows at least this much at once (a potion, a golden apple), so the slow regeneration
+/// of players doesn't rain numbers.
+pub const HEAL_SHOWN: f32 = 2.0;
+
+/// A heal (a negative change) is green; a big hit (a quarter of the mob's life or more) bigger and
+/// red; others yellow.
 pub fn colour_and_scale(amount: f32, max: f32) -> (u32, f32) {
-    if max > 0.0 && amount >= max / 4.0 { (0xFF5555, 1.5) } else { (0xFFDD33, 1.0) }
+    if amount < 0.0 {
+        (0x55FF55, 1.0)
+    } else if max > 0.0 && amount >= max / 4.0 {
+        (0xFF5555, 1.5)
+    } else {
+        (0xFFDD33, 1.0)
+    }
+}
+
+/// The number shown: "-3" for a hit, "+4" for a heal.
+pub fn label(amount: f32) -> String {
+    if amount < 0.0 { format!("+{}", text(-amount)) } else { format!("-{}", text(amount)) }
 }
 
 /// How far a number has risen at `now`, or None once it is gone.
@@ -59,9 +75,11 @@ mod tests {
     }
 
     #[test]
-    fn big_hits_stand_out() {
+    fn big_hits_stand_out_and_heals_are_green() {
         assert_eq!(colour_and_scale(5.0, 20.0), (0xFF5555, 1.5));
         assert_eq!(colour_and_scale(4.0, 20.0), (0xFFDD33, 1.0));
+        assert_eq!(colour_and_scale(-4.0, 20.0), (0x55FF55, 1.0));
+        assert_eq!((label(3.0), label(-4.0), label(2.5)), ("-3".into(), "+4".into(), "-2.5".into()));
     }
 
     #[test]

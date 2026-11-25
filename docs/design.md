@@ -1,4 +1,4 @@
-# Hits: requirements (draft for the owner)
+# Hits: design
 
 Hit a mob and the damage rises from it as a number; a hurt mob shows its hearts above its head for
 a few seconds. Everyone nearby sees them, in the game's own font and heart sprites.
@@ -39,7 +39,17 @@ You and your friend see what each hit did and how close a mob is to dying, witho
 | Text drawn above a mob after its render | drawn, in the game's font with an outline |
 | Facing the camera | the draw is turned with the body. Of three turns tried, one faced the camera from the south only; from the two views the right turn works out as 180° + body yaw − camera yaw, not yet seen on screen (the skeleton checks it) |
 
-## 6. Risks and answers
+## 6. Built (0.2.0), measured in the game (2026-11-25)
+
+| Case | Result |
+|---|---|
+| A cow hit for 3 (of 10) | a red, bigger "-3" rising, hearts above it |
+| A cow hit for 1.5 | a yellow "-1.5"; hearts 4 and a half |
+| A cow at 4 healed by Instant Health | a green "+4", hearts back to 4 of 5 |
+| The text facing the camera | read from the south and the east with the turn 180° + body yaw − camera yaw |
+| Arabic | "-3" first came out "3-", then a left-to-right mark showed as a box; each character is now drawn on its own, left to right |
+
+## 7. Risks and answers
 
 | Risk | Answer |
 |---|---|

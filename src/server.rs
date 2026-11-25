@@ -25,8 +25,10 @@ fn with<R>(f: impl FnOnce(&mut State) -> R) -> R {
     f(&mut STATE.lock().unwrap_or_else(|e| e.into_inner()))
 }
 
-pub fn hurt(entity: i32, amount: f32) {
-    if amount > 0.0 {
+/// A living entity's health changed: damage positive, healing negative (shown from
+/// `look::HEAL_SHOWN` on).
+pub fn changed(entity: i32, amount: f32) {
+    if amount > 0.0 || -amount >= crate::look::HEAL_SHOWN {
         with(|s| s.hits.push((entity, amount)));
     }
 }

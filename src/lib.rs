@@ -9,9 +9,17 @@ pub mod look;
 mod payloads;
 mod server;
 
+pub(crate) const MOD_ID: &str = "hits";
+
+/// Settings (Options > Mods > Hits), for each player's own screen.
+pub(crate) mod setting {
+    pub const NUMBERS: &str = "numbers";
+    pub const HEARTS: &str = "hearts";
+}
+
 use mod_api::{
-    ClientHost, IPayloadContext, LevelRandomHost, LivingDamagePostEvent, PayloadId, PlayerLoggedOutEvent, Registrar, RegistrationContext,
-    RenderLivingPostEvent, ServerHost, ServerTickEvent, ServerTickPhase,
+    ClientHost, Flow, IPayloadContext, LevelRandomHost, LivingDamagePostEvent, LivingHealEvent, LoopContext, LoopSide, PayloadId,
+    PlayerLoggedOutEvent, Registrar, RegistrationContext, RenderLivingPostEvent, ServerHost, ServerTickEvent, ServerTickPhase, SettingSpec,
 };
 #[allow(unused_imports)]
 use mod_api::prelude::*;
@@ -28,6 +36,11 @@ pub struct Mod;
 #[mod_api::horizon_mod]
 impl mod_api::Hooks for Mod {
     fn register(&self, r: &mut dyn Registrar, _cx: &RegistrationContext) {
+        for (key, label) in [(setting::NUMBERS, "hits.config.numbers"), (setting::HEARTS, "hits.config.hearts")] {
+            if let Err(e) = r.register_setting(SettingSpec::toggle(key, label, true)) {
+                eprintln!("[hits] setting {key}: {e:?}");
+            }
+        }
         let mut handlers = r.payload_handlers();
         let mut v1 = handlers.registrar("1").optional();
         let _ = payloads::HIT.set(v1.play_to_client_typed(PayloadId("hits:hit".into()), on_hit));
@@ -35,7 +48,17 @@ impl mod_api::Hooks for Mod {
 
     /// A living entity took a hit (its final damage, after armour and the rest).
     fn living_damage_post(&self, _: &mut dyn LevelRandomHost, event: &mut LivingDamagePostEvent<'_>) {
-        server::hurt(event.entity, event.container.new_damage());
+        server::changed(event.entity, event.container.new_damage());
+    }
+
+    /// A living entity heals (on the server's tick: the client's copy isn't told).
+    fn living_heal(&self, context: &dyn LoopContext, event: &mut LivingHealEvent) -> Flow {
+        if matches!(context.side(), LoopSide::Server)
+            && let Ok(id) = i32::try_from(event.entity)
+        {
+            server::changed(id, -event.amount);
+        }
+        Flow::Continue
     }
 
     fn server_tick(&self, host: &mut dyn ServerHost, event: &mut ServerTickEvent<'_>) {

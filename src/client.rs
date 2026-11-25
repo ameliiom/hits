@@ -54,7 +54,15 @@ fn left_to_right(d: &mut dyn mod_api::BlockEntityDrawContext, s: &str, y: f32, c
     }
 }
 
+fn on(host: &dyn ClientHost, key: &str) -> bool {
+    host.setting(crate::MOD_ID, key).is_none_or(|v| v.trim() != "false")
+}
+
 pub fn draw(host: &dyn ClientHost, event: &mut RenderLivingPostEvent<'_>) {
+    let (numbers_on, hearts_on) = (on(host, crate::setting::NUMBERS), on(host, crate::setting::HEARTS));
+    if !numbers_on && !hearts_on {
+        return;
+    }
     let id = event.entity.id;
     let d = &mut *event.draw;
     let now = d.game_time();
@@ -81,20 +89,20 @@ pub fn draw(host: &dyn ClientHost, event: &mut RenderLivingPostEvent<'_>) {
     d.translate([0.0, height + 0.4, 0.0]);
     d.rotate_about([0.0, 1.0, 0.0], look::facing(event.entity.body_yaw, camera), [0.0, 0.0, 0.0]);
     d.scale([0.025, -0.025, 0.025]);
-    if show_hearts {
+    if show_hearts && hearts_on {
         let line = match look::hearts(health, 10) {
             Some((full, half)) => format!("{}{}{}", "❤".repeat(full as usize), if half { "♥" } else { "" }, "♡".repeat(((max / 2.0).ceil() as usize).saturating_sub(full as usize + usize::from(half)))),
             None => format!("❤ {} / {}", look::text(health), look::text(max)),
         };
         left_to_right(d, &line, 0.0, 0xFF4040);
     }
-    for (amount, at) in numbers {
+    for (amount, at) in numbers.into_iter().filter(|_| numbers_on) {
         let Some(rise) = look::rise(&Number { amount, at: at.unwrap_or(now) }, now) else { continue };
         let (colour, scale) = look::colour_and_scale(amount, max);
         d.push();
         d.translate([0.0, -12.0 - rise, 0.0]);
         d.scale([scale, scale, 1.0]);
-        left_to_right(d, &format!("-{}", look::text(amount)), -8.0, colour);
+        left_to_right(d, &look::label(amount), -8.0, colour);
         d.pop();
     }
     d.pop();
