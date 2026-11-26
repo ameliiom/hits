@@ -54,6 +54,10 @@ pub fn tick(host: &mut dyn ServerHost) {
     let players = host.players().server_players();
     for (id, amount) in hits {
         let Ok(id_u) = u32::try_from(id) else { continue };
+        // Players' health is Team's (its cards); Hits shows mobs only.
+        if players.iter().any(|p| p.entity().id() == id_u) {
+            continue;
+        }
         let Some(entity) = host.entity(id_u) else { continue };
         let Some(living) = host.living(entity) else { continue };
         let (Some(health), Some(max), Some(at)) = (living.health(&*host), living.max_health(&*host), entity.position(&*host)) else { continue };

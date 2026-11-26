@@ -22,6 +22,7 @@ You and your friend see what each hit did and how close a mob is to dying, witho
 - **Hearts**: a mob hurt in the last 5 seconds shows its hearts above its head (the HUD's own heart
   sprites, half hearts included; a big mob a short bar instead).
 - Seen by everyone within 32 blocks; settings to turn either off.
+- Mobs only (0.4.1): a hurt player shows nothing, since Team's cards already show players' health.
 - Nothing to earn.
 
 ## 4. Choices
@@ -50,6 +51,7 @@ You and your friend see what each hit did and how close a mob is to dying, witho
 | Arabic | "-3" first came out "3-", then a left-to-right mark showed as a box; each character is now drawn on its own, left to right |
 | Heal shown (0.2.1) | Instant Health on a sheep at 3 of 8 showed "+4" (3 → 7): the heal shows what health really rose by, not what was asked (Instant Health III on a pig had shown "+32"); a heal the game did not apply shows nothing (it had shown "-0") |
 | Empty hearts (0.2.1) | drawn dark, a half heart pale: the font's outline heart had drawn as red as a full one |
+| A player hurt (0.4.1) | 4 damage to myself, seen from behind: no number, no hearts; a pig hit for 3 still showed "-3" and its hearts |
 
 ## 6b. Trades (0.3.0), measured in the game (2026-11-26)
 
