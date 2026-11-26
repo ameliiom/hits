@@ -11,6 +11,8 @@ For [Horizon](https://playhorizon.dev) (Minecraft: Java Edition 26.3 in Rust). H
 - A villager's trades show in [Jade](https://github.com/ameliiom/jade)'s panel when you look at it (Hits 0.3 drew them above its head).
 
 ## Install
+Needs [Kit](https://github.com/ameliiom/kit) 0.1 or later, the shared code of these mods, installed the same way (`kit.hmod`, `mod.kit:true`).
+
 1. Copy `hits.hmod` into `%APPDATA%\horizon\horizon-native-mods\`.
 2. Add the line `mod.hits:true` to `%APPDATA%\horizon\horizon-mods.txt`.
 3. Build: the launcher's Mods page **Build**, or `horizon-launcher native-build --instance horizon --trust-native-code`. A native mod runs with your rights: install it only from a source you trust.

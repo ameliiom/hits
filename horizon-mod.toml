@@ -1,12 +1,16 @@
 id = "hits"
 name = "Hits"
-version = "0.4.1"
+version = "0.4.2"
 description = "Each hit's damage rises from the mob it hurt, and a hurt mob shows its hearts above its head."
 authors = ["ameliiom"]
 license = "MIT"
 api = "0.2"
 side = "both"
 capabilities = ["registries"]
+
+[dependencies]
+# The shared code of ameliiom's mods (settings, comforts, inventory, outline, ...).
+kit = "^0.1"
 
 [native]
 game = "26.3"

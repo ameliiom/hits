@@ -4,6 +4,14 @@
 //! - **The look** (`look.rs`): text, colours, rise, hearts and the turn to the camera, on plain values.
 //! - **The server** (`server.rs`): hits heard, the new health sent to players near.
 //! - **The client** (`client.rs`): drawn above each mob after its render.
+// Kit (ameliiom/kit), the shared code: the installed Kit mod, or its source in place for
+// local builds (`kit_local`, horizon-mods/.cargo/config.toml).
+#[cfg(kit_local)]
+#[allow(dead_code)]
+#[path = "../../kit/src/lib.rs"]
+mod kit;
+#[cfg(not(kit_local))]
+use ::kit;
 mod client;
 pub mod look;
 mod payloads;
@@ -13,13 +21,14 @@ pub(crate) const MOD_ID: &str = "hits";
 
 /// Settings (Options > Mods > Hits), for each player's own screen.
 pub(crate) mod setting {
-    pub const NUMBERS: &str = "numbers";
-    pub const HEARTS: &str = "hearts";
+    use crate::kit::setting::Toggle;
+    pub const NUMBERS: Toggle = Toggle::on("numbers");
+    pub const HEARTS: Toggle = Toggle::on("hearts");
 }
 
 use mod_api::{
     ClientHost, Flow, IPayloadContext, LevelRandomHost, LivingDamagePostEvent, LivingHealEvent, LoopContext, LoopSide, PayloadId,
-    PlayerLoggedOutEvent, Registrar, RegistrationContext, RenderLivingPostEvent, ServerHost, ServerTickEvent, ServerTickPhase, SettingSpec,
+    PlayerLoggedOutEvent, Registrar, RegistrationContext, RenderLivingPostEvent, ServerHost, ServerTickEvent, ServerTickPhase,
 };
 #[allow(unused_imports)]
 use mod_api::prelude::*;
@@ -36,9 +45,9 @@ pub struct Mod;
 #[mod_api::horizon_mod]
 impl mod_api::Hooks for Mod {
     fn register(&self, r: &mut dyn Registrar, _cx: &RegistrationContext) {
-        for (key, label) in [(setting::NUMBERS, "hits.config.numbers"), (setting::HEARTS, "hits.config.hearts")] {
-            if let Err(e) = r.register_setting(SettingSpec::toggle(key, label, true)) {
-                eprintln!("[hits] setting {key}: {e:?}");
+        for key in [setting::NUMBERS, setting::HEARTS] {
+            if let Err(e) = r.register_setting(key.spec(MOD_ID)) {
+                eprintln!("[hits] setting {}: {e:?}", key.key);
             }
         }
         let mut handlers = r.payload_handlers();

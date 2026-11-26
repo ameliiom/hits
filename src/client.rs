@@ -59,12 +59,9 @@ fn coloured(s: &str, colour: u32) -> Vec<(char, u32)> {
     s.chars().map(|c| (c, colour)).collect()
 }
 
-fn on(host: &dyn ClientHost, key: &str) -> bool {
-    host.setting(crate::MOD_ID, key).is_none_or(|v| v.trim() != "false")
-}
-
 pub fn draw(host: &dyn ClientHost, event: &mut RenderLivingPostEvent<'_>) {
-    let (numbers_on, hearts_on) = (on(host, crate::setting::NUMBERS), on(host, crate::setting::HEARTS));
+    let on = |key: crate::kit::setting::Toggle| key.read(host, crate::MOD_ID);
+    let (numbers_on, hearts_on) = (on(crate::setting::NUMBERS), on(crate::setting::HEARTS));
     if !numbers_on && !hearts_on {
         return;
     }
