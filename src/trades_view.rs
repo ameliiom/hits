@@ -55,7 +55,8 @@ pub fn draw(host: &dyn ClientHost, event: &mut RenderLivingPostEvent<'_>, height
     for (i, t) in rows.iter().enumerate() {
         let at = look::row_layout(t.costs.len() > 1);
         d.push();
-        d.translate([0.0, look::row_y(i, rows.len()), 0.0]);
+        let [x, y] = look::place(i, rows.len());
+        d.translate([x, y, 0.0]);
         if let Some(a) = t.costs.first() {
             icon(read, d, a, at.cost_a);
         }

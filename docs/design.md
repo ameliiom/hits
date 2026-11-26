@@ -24,7 +24,7 @@ You and your friend see what each hit did and how close a mob is to dying, witho
 - Seen by everyone within 32 blocks; settings to turn either off.
 - **Trades (0.3.0)**: a villager or wandering trader you look at within 8 blocks shows its first 6
   trades above its head, item icons facing you: cost (one or two) → result, counts beside them, a
-  grey arrow when out of stock, the first trade on top as in the trading screen. A setting turns it off.
+  grey arrow when out of stock, in 2 columns read left to right from the top (0.3.1). A setting turns it off.
 - Nothing to earn.
 
 ## 4. Choices
@@ -64,6 +64,7 @@ You and your friend see what each hit did and how close a mob is to dying, witho
 | Looking at it from the south and from the east | the rows face the camera from both |
 | Looking away, then back | gone at once, back within a moment |
 | Close and looking up | the top rows went under the Jade panel: rows made smaller (0.26 block icons) and lower |
+| Smaller rows, 3.7 blocks from the side (0.3.0) | the top 2 of 6 rows still under the Jade panel: 0.3.1 lays trades in 2 columns of 3 rows, half the height: all 6 clear of the panel from the side (3.7 blocks) and the front (4.7) |
 
 ## 7. Risks and answers
 

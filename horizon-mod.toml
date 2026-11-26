@@ -1,6 +1,6 @@
 id = "hits"
 name = "Hits"
-version = "0.3.0"
+version = "0.3.1"
 description = "Each hit's damage rises from the mob it hurt, a hurt mob shows its hearts above its head, and a villager you look at shows its trades."
 authors = ["ameliiom"]
 license = "MIT"

@@ -125,9 +125,20 @@ pub fn row_layout(two_costs: bool) -> RowLayout {
     }
 }
 
-/// Row `i`'s height above the lowest of `rows`: the first trade on top, as the screen lists them.
-pub fn row_y(i: usize, rows: usize) -> f32 {
-    rows.saturating_sub(1).saturating_sub(i) as f32 * ROW_HEIGHT
+/// Trades sit in this many columns, so 6 make 3 rows and the stack stays low enough to clear the
+/// Jade panel from up close (6 rows in one column went under it at 4 blocks: seen in the game).
+pub const COLUMNS: usize = 2;
+/// From one column's centre to the next: the widest row (4 slots) and half a slot between.
+pub const COLUMN_WIDTH: f32 = 4.5 * ICON;
+
+/// Where trade `i` of `n` is centred, in blocks: x from the middle, y above the lowest row. Read
+/// left to right, then down, the first trade at the top left; one trade is centred.
+pub fn place(i: usize, n: usize) -> [f32; 2] {
+    let columns = n.clamp(1, COLUMNS);
+    let rows = n.div_ceil(columns);
+    let (row, column) = (i / columns, i % columns);
+    let x = (column as f32 - (columns - 1) as f32 / 2.0) * COLUMN_WIDTH;
+    [x, rows.saturating_sub(1).saturating_sub(row) as f32 * ROW_HEIGHT]
 }
 
 /// How far along the ray from `origin` (unit `dir`) it first meets the box `min`..`max`, or None
@@ -169,9 +180,15 @@ mod tests {
         let two = row_layout(true);
         assert_eq!(two.cost_b, Some(-ICON / 2.0));
         assert!((two.cost_a + two.result).abs() < 1e-6 && two.arrow > 0.0 && two.result > two.arrow);
-        assert_eq!(row_y(0, 6), 5.0 * ROW_HEIGHT);
-        assert_eq!(row_y(5, 6), 0.0);
-        assert_eq!(row_y(0, 1), 0.0);
+        // Six trades: 3 rows of 2, the first top left, the last bottom right.
+        assert_eq!(place(0, 6), [-COLUMN_WIDTH / 2.0, 2.0 * ROW_HEIGHT]);
+        assert_eq!(place(1, 6), [COLUMN_WIDTH / 2.0, 2.0 * ROW_HEIGHT]);
+        assert_eq!(place(5, 6), [COLUMN_WIDTH / 2.0, 0.0]);
+        // Odd counts keep their columns; one trade is centred.
+        assert_eq!(place(2, 3), [-COLUMN_WIDTH / 2.0, 0.0]);
+        assert_eq!(place(0, 1), [0.0, 0.0]);
+        // Two neighbouring four-slot rows never overlap.
+        assert!(COLUMN_WIDTH >= 4.0 * ICON);
     }
 
     #[test]
