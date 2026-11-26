@@ -22,9 +22,6 @@ You and your friend see what each hit did and how close a mob is to dying, witho
 - **Hearts**: a mob hurt in the last 5 seconds shows its hearts above its head (the HUD's own heart
   sprites, half hearts included; a big mob a short bar instead).
 - Seen by everyone within 32 blocks; settings to turn either off.
-- **Trades (0.3.0)**: a villager or wandering trader you look at within 8 blocks shows its first 6
-  trades above its head, item icons facing you: cost (one or two) → result, counts beside them, a
-  grey arrow when out of stock, in 2 columns read left to right from the top (0.3.1). A setting turns it off.
 - Nothing to earn.
 
 ## 4. Choices
@@ -33,8 +30,6 @@ You and your friend see what each hit did and how close a mob is to dying, witho
 |---|---|---|---|
 | Where health comes from | the server, on each hit (`living_damage_post`), sent to players near | the client | measured: a client reads only its own player's health (`living()` is None for others) |
 | Where it is drawn | above the mob, in the world (`render_living_post`) | the HUD | it stays with the mob |
-| Who finds the merchant looked at | the server, every 4 ticks: the player's eye ray against merchants' boxes within 8 blocks, nothing solid between | the client's crosshair | the crosshair reaches 3 blocks; offers exist only on the server |
-| When trades are sent | once when a look starts (at most 6, ids and counts) and once when it ends, to that player only | every tick | the payload stays small; a trade made while looking shows after looking away and back |
 
 ## 5. Measured (owner's PC, Horizon f037744, a spike, 2026-11-25)
 
@@ -66,10 +61,16 @@ You and your friend see what each hit did and how close a mob is to dying, witho
 | Close and looking up | the top rows went under the Jade panel: rows made smaller (0.26 block icons) and lower |
 | Smaller rows, 3.7 blocks from the side (0.3.0) | the top 2 of 6 rows still under the Jade panel: 0.3.1 lays trades in 2 columns of 3 rows, half the height: all 6 clear of the panel from the side (3.7 blocks) and the front (4.7) |
 
+## 6c. Trades moved to Jade (0.4.0, 2026-11-26)
+
+The owner's rule: new work extends what already exists and never repeats a meaning. Jade is the
+"what you are looking at" panel and already showed a villager's profession and level, so its
+trades belong there (Jade 0.4.0, its own toggle), and Hits keeps only what a hit did: damage
+numbers and hearts. Hits 0.4.0 is 0.2.1's code again; 0.3.x's trade drawing is in git history.
+
 ## 7. Risks and answers
 
 | Risk | Answer |
 |---|---|
 | A big fight floods the network | at most 20 numbers a second per player, nearest first |
 | Clutter | numbers last a second, hearts five; both can be turned off |
-| Trades flood the network | one message per look start and end, at most 6 trades of 3 item ids |

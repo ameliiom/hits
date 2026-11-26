@@ -65,15 +65,10 @@ fn on(host: &dyn ClientHost, key: &str) -> bool {
 
 pub fn draw(host: &dyn ClientHost, event: &mut RenderLivingPostEvent<'_>) {
     let (numbers_on, hearts_on) = (on(host, crate::setting::NUMBERS), on(host, crate::setting::HEARTS));
-    let id = event.entity.id;
-    let read: &dyn mod_api::Host = host;
-    let height = read.entity(id).and_then(|e| e.dimensions(read)).map_or(2.0, |s| s[1] as f32);
-    if on(host, crate::setting::TRADES) {
-        crate::trades_view::draw(host, event, height);
-    }
     if !numbers_on && !hearts_on {
         return;
     }
+    let id = event.entity.id;
     let d = &mut *event.draw;
     let now = d.game_time();
     let Some((health, max, numbers, show_hearts)) = with(|m| {
@@ -92,6 +87,8 @@ pub fn draw(host: &dyn ClientHost, event: &mut RenderLivingPostEvent<'_>) {
     }) else {
         return;
     };
+    let read: &dyn mod_api::Host = host;
+    let height = read.entity(id).and_then(|e| e.dimensions(read)).map_or(2.0, |s| s[1] as f32);
     let camera = host.camera().map_or(0.0, |c| c.yaw);
     d.push();
     d.translate([0.0, height + 0.4, 0.0]);
