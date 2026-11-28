@@ -52,6 +52,7 @@ You and your friend see what each hit did and how close a mob is to dying, witho
 | Heal shown (0.2.1) | Instant Health on a sheep at 3 of 8 showed "+4" (3 → 7): the heal shows what health really rose by, not what was asked (Instant Health III on a pig had shown "+32"); a heal the game did not apply shows nothing (it had shown "-0") |
 | Empty hearts (0.2.1) | drawn dark, a half heart pale: the font's outline heart had drawn as red as a full one |
 | A player hurt (0.4.1) | 4 damage to myself, seen from behind: no number, no hearts; a pig hit for 3 still showed "-3" and its hearts |
+| Two players (0.4.3, Jade 0.4.2) | P1 looking at P2 hurt for 4: Jade shows "P2" only, the hearts in Team's card; P1 hitting a pig: "-1" rising at it, no hearts, Jade shows 9 / 10 |
 
 ## 6b. Trades (0.3.0), measured in the game (2026-11-26)
 
