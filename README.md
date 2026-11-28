@@ -1,13 +1,12 @@
 # Hits
 
-For [Horizon](https://playhorizon.dev) (Minecraft: Java Edition 26.3 in Rust). Hit a mob and the damage rises from it as a number; a hurt mob shows its hearts above its head for a few seconds. Everyone near sees them. English and Arabic.
+For [Horizon](https://playhorizon.dev) (Minecraft: Java Edition 26.3 in Rust). Hit a mob and the damage rises from it as a number. Everyone near sees it. A mob's health is in [Jade](https://github.com/ameliiom/jade)'s panel when you look at it, a friend's in Team's cards, so Hits shows numbers only. English and Arabic.
 
 ## How it plays
 - Each hit's damage rises and fades over a second: yellow, a big hit (a quarter of the mob's life) bigger and red. A heal of 2 or more rises green (+4).
-- A mob hurt or healed in the last 5 seconds shows its hearts above its head; a mob with more than ten hearts shows its health as a number.
 - Players show nothing: their health is in Team's cards.
 - Within 32 blocks, at most 20 numbers a second per player.
-- **Options > Mods > Hits**: numbers and hearts each on or off.
+- **Options > Mods > Hits**: numbers on or off.
 - A villager's trades show in [Jade](https://github.com/ameliiom/jade)'s panel when you look at it (Hits 0.3 drew them above its head).
 
 ## Install

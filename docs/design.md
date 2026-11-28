@@ -1,7 +1,7 @@
 # Hits: design
 
-Hit a mob and the damage rises from it as a number; a hurt mob shows its hearts above its head for
-a few seconds. Everyone nearby sees them, in the game's own font and heart sprites.
+Hit a mob and the damage rises from it as a number. Everyone nearby sees it, in the game's own font.
+(0.4.3: the hearts above hurt mobs are gone; see 6d.)
 
 ## 1. Outcome
 
@@ -70,9 +70,16 @@ The owner's rule: new work extends what already exists and never repeats a meani
 trades belong there (Jade 0.4.0, its own toggle), and Hits keeps only what a hit did: damage
 numbers and hearts. Hits 0.4.0 is 0.2.1's code again; 0.3.x's trade drawing is in git history.
 
+## 6d. Hearts removed (0.4.3, 2026-11-28)
+
+The owner's reassessment: no fact twice on one screen. A mob's health showed both in Jade's panel
+(the mob looked at) and as Hits' hearts over its head; when you hit a mob you look at it, so the
+two showed together. Jade owns "what you look at", so its panel keeps health and Hits keeps only
+what Jade cannot show: each hit's number rising at the mob. The hearts setting went with them.
+
 ## 7. Risks and answers
 
 | Risk | Answer |
 |---|---|
 | A big fight floods the network | at most 20 numbers a second per player, nearest first |
-| Clutter | numbers last a second, hearts five; both can be turned off |
+| Clutter | numbers last a second and can be turned off |

@@ -1,7 +1,7 @@
 id = "hits"
 name = "Hits"
-version = "0.4.2"
-description = "Each hit's damage rises from the mob it hurt, and a hurt mob shows its hearts above its head."
+version = "0.4.3"
+description = "Each hit's damage rises from the mob it hurt, for everyone near."
 authors = ["ameliiom"]
 license = "MIT"
 api = "0.2"

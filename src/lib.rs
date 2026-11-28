@@ -1,7 +1,7 @@
-//! Hits: each hit's damage rises from the mob it hurt, and a hurt mob shows its hearts above its
-//! head for a few seconds, for everyone near. See `docs/design.md`.
+//! Hits: each hit's damage rises from the mob it hurt, for everyone near. A mob's health is Jade's
+//! and a player's is Team's, so Hits shows neither. See `docs/design.md`.
 //!
-//! - **The look** (`look.rs`): text, colours, rise, hearts and the turn to the camera, on plain values.
+//! - **The look** (`look.rs`): text, colours, rise and the turn to the camera, on plain values.
 //! - **The server** (`server.rs`): hits heard, the new health sent to players near.
 //! - **The client** (`client.rs`): drawn above each mob after its render.
 // Kit (ameliiom/kit), the shared code: the installed Kit mod, or its source in place for
@@ -23,7 +23,6 @@ pub(crate) const MOD_ID: &str = "hits";
 pub(crate) mod setting {
     use crate::kit::setting::Toggle;
     pub const NUMBERS: Toggle = Toggle::on("numbers");
-    pub const HEARTS: Toggle = Toggle::on("hearts");
 }
 
 use mod_api::{
@@ -35,7 +34,7 @@ use mod_api::prelude::*;
 
 fn on_hit(hit: payloads::Hit, _: &mut dyn IPayloadContext) -> Result<(), String> {
     let t = |v: mod_api::VarInt| v.0 as f32 / 10.0;
-    client::hit(hit.entity.0.max(0) as u32, t(hit.amount), t(hit.health), t(hit.max));
+    client::hit(hit.entity.0.max(0) as u32, t(hit.amount), t(hit.max));
     Ok(())
 }
 
@@ -45,10 +44,8 @@ pub struct Mod;
 #[mod_api::horizon_mod]
 impl mod_api::Hooks for Mod {
     fn register(&self, r: &mut dyn Registrar, _cx: &RegistrationContext) {
-        for key in [setting::NUMBERS, setting::HEARTS] {
-            if let Err(e) = r.register_setting(key.spec(MOD_ID)) {
-                eprintln!("[hits] setting {}: {e:?}", key.key);
-            }
+        if let Err(e) = r.register_setting(setting::NUMBERS.spec(MOD_ID)) {
+            eprintln!("[hits] setting {}: {e:?}", setting::NUMBERS.key);
         }
         let mut handlers = r.payload_handlers();
         let mut v1 = handlers.registrar("1").optional();

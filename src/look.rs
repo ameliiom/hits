@@ -1,9 +1,8 @@
-//! How a hit looks, on plain values: the number's text, colour, size and rise, how long the hearts
-//! stay, and the turn that faces text to the camera.
+//! How a hit looks, on plain values: the number's text, colour, size and rise, and the turn that
+//! faces text to the camera.
 
-/// How long a number rises and the hearts stay, in game ticks.
+/// How long a number rises, in game ticks.
 pub const NUMBER_TICKS: i64 = 20;
-pub const HEARTS_TICKS: i64 = 100;
 /// How far a number rises over its life, in font pixels.
 pub const RISE: f32 = 16.0;
 
@@ -63,34 +62,6 @@ pub fn facing(body_yaw: f32, camera_yaw: f32) -> f32 {
     (180.0 + body_yaw - camera_yaw).rem_euclid(360.0)
 }
 
-/// The hearts row: each heart's glyph and colour, full red, a half pale, the empty ones dark (the
-/// font's outline heart drew as red as a full one: seen in the game); None for a mob with more
-/// than `cap` hearts.
-pub fn heart_row(health: f32, max: f32, cap: u32) -> Option<Vec<(char, u32)>> {
-    let total = (max / 2.0).ceil().max(0.0) as u32;
-    if total > cap {
-        return None;
-    }
-    let (full, half) = hearts(health, cap)?;
-    Some(
-        (0..total)
-            .map(|i| match i.cmp(&full) {
-                std::cmp::Ordering::Less => ('❤', 0xFF4040),
-                std::cmp::Ordering::Equal if half => ('❤', 0xFF9A9A),
-                _ => ('❤', 0x3A3A3A),
-            })
-            .collect(),
-    )
-}
-
-/// Hearts: how many full and whether a half, for `health` (2 health a heart), at most `cap` hearts
-/// drawn (bigger mobs show a number instead).
-pub fn hearts(health: f32, cap: u32) -> Option<(u32, bool)> {
-    let halves = (health.max(0.0)).ceil() as u32;
-    let (full, half) = (halves / 2, halves % 2 == 1);
-    (full + u32::from(half) <= cap).then_some((full, half))
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -137,20 +108,5 @@ mod tests {
         assert_eq!(facing(90.0, 180.0), 90.0);
         assert_eq!(facing(90.0, 90.0), 180.0);
         assert_eq!(facing(0.0, 0.0), 180.0);
-    }
-
-    #[test]
-    fn the_hearts_row_shows_empty_hearts_dark() {
-        let row = heart_row(5.0, 10.0, 10).unwrap();
-        assert_eq!(row.iter().map(|h| h.1).collect::<Vec<_>>(), vec![0xFF4040, 0xFF4040, 0xFF9A9A, 0x3A3A3A, 0x3A3A3A]);
-        assert!(heart_row(30.0, 40.0, 10).is_none());
-    }
-
-    #[test]
-    fn hearts_round_up_to_halves() {
-        assert_eq!(hearts(20.0, 10), Some((10, false)));
-        assert_eq!(hearts(7.0, 10), Some((3, true)));
-        assert_eq!(hearts(0.5, 10), Some((0, true)));
-        assert_eq!(hearts(40.0, 10), None);
     }
 }
